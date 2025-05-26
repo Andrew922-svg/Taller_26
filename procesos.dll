@@ -1,0 +1,34 @@
+USE `taller`;
+DROP procedure IF EXISTS `fabri`;
+
+DELIMITER $$
+USE `taller`$$
+CREATE PROCEDURE `fabri` (
+IN nom_fac varchar(100)
+)
+BEGIN
+	INSERT INTO fabricante(nombre) value(nom_fac);
+END$$
+
+DELIMITER ;
+
+
+USE `taller`;
+DROP procedure IF EXISTS `produc`;
+
+USE `taller`;
+DROP procedure IF EXISTS `taller`.`produc`;
+;
+
+DELIMITER $$
+USE `taller`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `produc`(
+IN nom_produc varchar(100),
+IN prec_produc double,
+IN cod_fac int
+)
+BEGIN
+	insert into producto(nombre,precio,codigo_fabricante) 
+    values
+    (nom_produc, prec_produc, cod_fac);
+END$$

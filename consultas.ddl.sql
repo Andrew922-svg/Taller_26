@@ -321,7 +321,7 @@ join fabricante as f on p.codigo_fabricante = f.codigo
 where f.codigo = 1;
 
 -- Punto 1.1.6-13
-select max(p.precio) as ecnomico, f.nombre
+select max(p.precio) as economico, f.nombre
 from producto as p 
 join fabricante as f on p.codigo_fabricante = f.codigo 
 where f.codigo = 1;
@@ -404,8 +404,6 @@ select f.nombre, ifnull(round(avg(p.precio * 0.8804),2), 0 ) as avg_precio
     right join fabricante f on p.codigo_fabricante = f.codigo
     group by f.nombre;
     
-    
-
 -- Punto 1.1.6-24
 select f.nombre, concat('€ ', round(avg(p.precio * 0.8804), 0)) as 'Precio en euros'
 	from producto as p 
@@ -419,6 +417,38 @@ select f.nombre as 'Nombre fab.', count(p.nombre)as 'Nombre pro.'
 	join fabricante as f on p.codigo_fabricante = f.codigo
 	group by f.nombre
 	having count(p.nombre) > 2; 
+    
+-- Punto 1.1.6-26
+	select f.nombre, count(p.nombre) as 'Cantidad de productos'
+	from producto p 
+	join fabricante f on p.codigo_fabricante = f.codigo
+	group by f.nombre desc
+    having avg(p.precio * 0.8804) >= 220;
+
+-- Punto 1.1.6-27
+select f.nombre, count(p.nombre) as 'Cantidad de productos'
+from producto p 
+right join fabricante f on p.codigo_fabricante = f.codigo and p.precio *0.8804 >= 220
+group by f.nombre asc;
+
+-- Punto 1.1.6-28
+SELECT f.nombre, SUM(p.precio) AS precio_total
+FROM producto p
+JOIN fabricante f ON p.codigo_fabricante = f.codigo
+GROUP BY f.nombre
+HAVING SUM(p.precio * 0.8804) > 1000;
+
+-- Punto 1.1.6-29
+select p.nombre as 'Nombre producto', p.precio as 'Precio producto' , f.nombre as 'Nombre fabricante'
+from producto p 
+join fabricante f on p.codigo_fabricante = f.codigo
+where p.precio = (
+	select max(pp.precio)
+    from producto pp
+    where pp.codigo_fabricante = p.codigo_fabricante
+)
+order by f.nombre asc
+;
 
 -- Punton 1.1.7.1-1
 select p.nombre
@@ -426,4 +456,154 @@ from producto p
 where p.codigo_fabricante = ( select f.codigo
 from fabricante f
 where f.nombre='Lenovo'
+);
+
+-- Punto 1.1.7.1-2
+select p.nombre
+from producto p 
+where p.precio = (
+select max(pp.precio) 
+from producto pp, fabricante f
+where pp.codigo_fabricante = f.codigo and f.codigo = 2
+);
+
+-- Punto 1.1.7.1-3
+select p.nombre
+from producto as p
+where p.precio = 
+(select max(p.precio)
+from fabricante as f, producto p
+where p.codigo_fabricante = f.codigo and f.nombre = "Lenovo"
+group by f.nombre);
+
+-- Punto 1.1.7.1-4
+select p.nombre 
+from producto as p
+where p.precio = (
+	select min(p.precio)
+    from producto p, fabricante as f
+    where p.codigo_fabricante = f.codigo and f.nombre = 'Hewlett-Packard');
+    
+-- Punto 1.1.7.1-5
+select p.nombre 
+from producto as p 
+where p.precio >= (
+select max(p.precio)
+from producto as p, fabricante as f
+where p.codigo_fabricante = f.codigo and f.codigo = 2
+);
+
+-- Punto 1.1.7.1-6
+select p.nombre
+from producto as p 
+where p.precio > (
+select avg(p.precio)
+from producto as p, fabricante as f
+where p.codigo_fabricante = f.codigo and f.codigo = 1
+);
+
+-- Punto 1.1.7.2-7
+select p.nombre 
+from producto as p 
+where p.precio >= all(
+select pp.precio
+from producto as pp
+);
+
+-- Punto 1.1.7.2-8
+select p.nombre 
+from producto as p 
+where p.precio <= all (
+select pp.precio
+from producto as pp
+);
+
+-- Punto 1.1.7.2-9
+select f.nombre 
+from fabricante as f
+where f.codigo = any (
+	select p.codigo_fabricante
+    from producto as p);
+
+-- Punto 1.1.7.2-10
+select f.nombre 
+from fabricante as f
+	where f.codigo <> all (
+	select p.codigo_fabricante 
+	from producto as p
+);
+
+-- Punto 1.1.7.3-11
+select f.nombre 
+from fabricante as f
+where f.codigo in (
+	select p.codigo_fabricante
+    from producto as p
+    );
+    
+-- Punto 1.1.7.3-12
+select f.nombre 
+from fabricante as f 
+where f.codigo not in (
+	select p.codigo_fabricante 
+    from producto as p
+);
+
+-- Punto 1.1.7.4-13
+select distinct f.nombre 
+from fabricante as f 
+join producto as p on p.codigo_fabricante = f.codigo
+where exists (
+	select p.codigo_fabricante 
+    from producto as p
+);
+
+-- Punto 1.1.7.4-14
+select distinct f.nombre
+from fabricante as f
+left join producto as p on p.codigo_fabricante = f.codigo
+where not exists(
+	select p.codigo_fabricante 
+    from producto 
+    join fabricante as f on p.codigo_fabricante = f.codigo 
+);
+
+-- Punto 1.1.7.5-15
+SELECT f.nombre, p.nombre, p.precio
+FROM producto p INNER JOIN fabricante f ON p.codigo_fabricante = f.codigo 
+where (p.codigo_fabricante, p.precio) in (
+	select codigo_fabricante, max(precio)
+    from producto 
+	group by codigo_fabricante
+    );
+    
+-- 1.1.7.5-16
+SELECT f.nombre, p.nombre, p.precio
+FROM producto p INNER JOIN fabricante f ON p.codigo_fabricante = f.codigo 
+where (p.codigo_fabricante, p.precio) in (
+	select codigo_fabricante, max(precio)
+    from producto 
+	group by codigo_fabricante
+    );
+
+-- Punto 1.1.7.5-17
+      select p.nombre, f.nombre
+    from producto as p 
+    join fabricante as f on p.codigo_fabricante = f.codigo
+    where p.precio = (
+		SELECT max(precio)
+        from producto
+        where codigo_fabricante = p.codigo_fabricante
+    ) and f.codigo = 2;
+    
+-- Punto 1.1.8-18
+select f.nombre
+from producto as p 
+join fabricante as f on p.codigo_fabricante = f.codigo
+group by f.nombre
+having count(p.codigo) = (
+	 select count(producto.codigo)
+     from producto 
+     join fabricante on codigo_fabricante = fabricante.codigo
+     where fabricante.codigo = 2
 );
